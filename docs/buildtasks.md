@@ -2,7 +2,7 @@
 
 You can create, list, upload and delete build tasks with tfx.
 
-[![Managing VSO Tasks](http://img.youtube.com/vi/u_4ZJcEE3S4/0.jpg)](https://youtu.be/u_4ZJcEE3S4 "Managing VSO Build Tasks")
+[![Managing VSTS Tasks](http://img.youtube.com/vi/u_4ZJcEE3S4/0.jpg)](https://youtu.be/u_4ZJcEE3S4 "Managing VSTS Build Tasks")
 
 [Video Link](https://youtu.be/u_4ZJcEE3S4)
 
@@ -57,6 +57,8 @@ It's task is in the
 ~$ tfx build tasks upload --task-path ./CreateOctopusRelease
 ```
 
+Build tasks are cached by version on the agent. The implementation by that version is considered to be immutable. If you are changing the implementation and uploading, bump at least the patch version.
+
 ## List
 
 To list the tasks that are on the server ...
@@ -85,7 +87,7 @@ Of course, be cautious deleting tasks.
 
 ####Example
 ```bash
-~/$ tfx build tasks delete 4e131b60-5532-4362-95b6-7c67d9841b4f
+~/$ tfx build tasks delete --task-id 4e131b60-5532-4362-95b6-7c67d9841b4f
 Copyright Microsoft Corporation
 
 task: 4e131b60-5532-4362-95b6-7c67d9841b4f deleted successfully!

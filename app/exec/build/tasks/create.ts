@@ -57,7 +57,7 @@ export class TaskCreate extends tasksBase.BuildTaskBase<TaskCreateResult> {
 				throw new Error("name is a required alphanumeric string with no spaces");
 			}
 
-			if (!friendlyName || !check.isLength(friendlyName, 1, 25)) {
+			if (!friendlyName || !check.isLength(friendlyName, 1, 40)) {
 				throw new Error("friendlyName is a required string <= 40 chars");
 			}
 
@@ -97,7 +97,7 @@ export class TaskCreate extends tasksBase.BuildTaskBase<TaskCreateResult> {
 			def.visibility = ["Build", "Release"];
 			def.demands = [];
 			def.version = { Major: "0", Minor: "1", Patch: "0"};
-			def.minimumAgentVersion = "1.83.0";
+			def.minimumAgentVersion = "1.95.0";
 			def.instanceNameFormat = taskName + " $(message)";
 
 			let cwdInput = {
@@ -125,10 +125,8 @@ export class TaskCreate extends tasksBase.BuildTaskBase<TaskCreateResult> {
 					target: "sample.js",
 					argumentFormat: ""
 				},
-				PowerShell: {
-					target: "$(currentDirectory)\\sample.ps1",
-					argumentFormat: "",
-					workingDirectory: "$(currentDirectory)"
+				PowerShell3: {
+					target: "sample.ps1"
 				}
 			}
 

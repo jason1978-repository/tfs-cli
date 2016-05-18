@@ -12,6 +12,7 @@ import trace = require('../../../lib/trace');
 
 export abstract class ManifestBuilder {
 	protected packageFiles: PackageFiles = { };
+    protected lcPartNames: {[filename: string]: string} = { };
 	protected data: any = { };
 
 	constructor(private extRoot: string) { }
@@ -42,11 +43,6 @@ export abstract class ManifestBuilder {
 	 * Given a key/value pair, decide how this effects the manifest
 	 */
 	public abstract processKey(key: string, value: any, override: boolean): void;
-
-	/**
-	 * Return a string[] of current validation errors
-	 */
-	public abstract validate(): Q.Promise<string[]>;
 
 	/**
 	 * Called just before the package is written to make any final adjustments.
@@ -175,7 +171,8 @@ export abstract class ManifestBuilder {
 		if (typeof file.assetType === "string") {
 			file.assetType = [<string>file.assetType];
 		}
-		file.path = cleanAssetPath(file.path);
+		
+		file.path = cleanAssetPath(file.path, this.extRoot);
 		if (!file.partName) {
 			file.partName = "/" + path.relative(this.extRoot, file.path);
 		}
@@ -184,15 +181,15 @@ export abstract class ManifestBuilder {
 		}
 
 		file.partName = forwardSlashesPath(file.partName);
-
+		
 		// Default the assetType to the partName.
 		if (file.addressable && !file.assetType) {
 			file.assetType = [toZipItemName(file.partName)];
 		}
 
 		if (this.packageFiles[file.path]) {
-			if (_.isArray(this.packageFiles[file.path].assetType)) {
-				file.assetType = (<string[]>file.assetType).concat(<string[]>(this.packageFiles[file.path].assetType));
+			if (_.isArray(this.packageFiles[file.path].assetType) && file.assetType) {
+				file.assetType = (<string[]>(this.packageFiles[file.path].assetType)).concat(<string[]>file.assetType);
 				this.packageFiles[file.path].assetType = file.assetType;
 			}
 		}
@@ -205,8 +202,14 @@ export abstract class ManifestBuilder {
 			// Don't add files discovered via directory if they've already
 			// been added.
 		} else {
-			// key off a guid if there is no file path.
-			this.packageFiles[file.path || common.newGuid()] = file;
+			let existPartName = this.lcPartNames[file.partName.toLowerCase()];
+			if (!existPartName || file.partName === existPartName) {
+				// key off a guid if there is no file path.
+				this.packageFiles[file.path || common.newGuid()] = file;
+				this.lcPartNames[file.partName.toLowerCase()] = file.partName;
+			} else {
+				throw "All files in the package must have a case-insensitive unique filename. Trying to add " + file.partName + ", but " + existPartName + " was already added to the package.";
+			}
 		}
 		if (file.contentType && this.packageFiles[file.path]) {
 			this.packageFiles[file.path].contentType = file.contentType;
